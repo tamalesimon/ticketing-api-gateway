@@ -1,5 +1,7 @@
 package com.ticketing.api_gateway.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -14,6 +16,8 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtAuthFilter implements WebFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+
     final JwtUtil jwtUtil;
 
     public JwtAuthFilter(JwtUtil jwtUtil) {
@@ -23,24 +27,30 @@ public class JwtAuthFilter implements WebFilter {
     @Override
     public @NonNull Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-
+        String path = request.getURI().getPath();
+        logger.info("Incoming request: {}", path);
         if (request.getURI().getPath().contains("/auth")) {
+            logger.info("Request to /auth endpoint, skipping authentications.");
             return chain.filter(exchange);
         }
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.warn("Authorization header is missing or does not start with 'Bearer '.");
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
         String token = authHeader.substring(7);
+        logger.info("Extracted token: {}", token);
         if (!jwtUtil.validateToken(token)) {
+            logger.warn("Token validation failed for token: {}", token);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
+        logger.info("Token validation successful. Proceeding with the request.");
         return chain.filter(exchange);
 
     }
