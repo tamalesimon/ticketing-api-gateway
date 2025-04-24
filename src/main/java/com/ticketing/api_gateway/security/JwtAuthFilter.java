@@ -29,7 +29,7 @@ public class JwtAuthFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
         logger.info("Incoming request: {}", path);
-        if (request.getURI().getPath().contains("/auth")) {
+        if (request.getURI().getPath().contains("/token")) {
             logger.info("Request to /auth endpoint, skipping authentications.");
             return chain.filter(exchange);
         }
