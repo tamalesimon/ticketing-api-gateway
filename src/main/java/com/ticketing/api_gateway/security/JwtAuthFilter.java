@@ -2,6 +2,7 @@ package com.ticketing.api_gateway.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.gateway.route.Route;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -29,8 +30,14 @@ public class JwtAuthFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
         logger.info("Incoming request: {}", path);
-        if (request.getURI().getPath().contains("/token")) {
-            logger.info("Request to /auth endpoint, skipping authentications.");
+
+        Object routeAttr = exchange.getAttributeOrDefault("org.springframework.cloud.gateway.support.ServerWebExchangeUtils.gatewayRoute", null);
+        if (routeAttr instanceof Route route) {
+            logger.info("Request routed to: {}, URI: {}", route.getId(), route.getUri());
+        }
+
+        if (path.contains("/token")) {
+            logger.info("Request to /token endpoint, skipping authentications.");
             return chain.filter(exchange);
         }
 
