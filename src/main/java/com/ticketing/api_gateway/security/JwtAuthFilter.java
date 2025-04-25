@@ -31,12 +31,13 @@ public class JwtAuthFilter implements WebFilter {
         String path = request.getURI().getPath();
         logger.info("Incoming request: {}", path);
 
-        Object routeAttr = exchange.getAttributeOrDefault("org.springframework.cloud.gateway.support.ServerWebExchangeUtils.gatewayRoute", null);
+        Object routeAttr = exchange.getAttributeOrDefault(
+                "org.springframework.cloud.gateway.support.ServerWebExchangeUtils.gatewayRoute", null);
         if (routeAttr instanceof Route route) {
             logger.info("Request routed to: {}, URI: {}", route.getId(), route.getUri());
         }
 
-        if (path.contains("/token")) {
+        if (path.contains("/token") || path.contains("/actuator/routes")) {
             logger.info("Request to /token endpoint, skipping authentications.");
             return chain.filter(exchange);
         }
