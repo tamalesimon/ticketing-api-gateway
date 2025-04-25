@@ -37,7 +37,7 @@ public class JwtAuthFilter implements WebFilter {
             logger.info("Request routed to: {}, URI: {}", route.getId(), route.getUri());
         }
 
-        if (path.contains("/token") || path.contains("/actuator/routes")) {
+        if (path.contains("/token") || path.contains("/actuator/gateway")) {
             logger.info("Request to /token endpoint, skipping authentications.");
             return chain.filter(exchange);
         }
